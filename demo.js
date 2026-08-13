@@ -63,7 +63,7 @@ if(date){ date.min=new Date().toISOString().split("T")[0]; date.addEventListener
 if(pax) pax.addEventListener("input",quote);
 if(session) session.addEventListener("change",refreshAvailability);
 if(packageSelect) packageSelect.addEventListener("change",quote);
-quote();
+/* quote deferred until CMS data is initialized */
 
 const menuBtn=$("#menuBtn"), nav=$("#navLinks");
 if(menuBtn) menuBtn.onclick=()=>nav.classList.toggle("open");
@@ -180,7 +180,7 @@ function editPackage(id){
   document.getElementById("pkgMax").value=x.maxPax;
   document.getElementById("pkgDesc").value=x.desc||"";
   document.getElementById("pkgActive").checked=!!x.active;
-  document.getElementById("adminDemo").scrollIntoView({behavior:"smooth"});
+  document.getElementById("adminDemo")?.scrollIntoView({behavior:"smooth"});
 }
 function deletePackage(id){
   if(!confirm("Padam pakej ini?"))return;
@@ -224,7 +224,7 @@ function editGallery(id){
   document.getElementById("galCaption").value=x.caption||"";
   document.getElementById("galUrl").value=x.url||"";
   document.getElementById("galActive").checked=!!x.active;
-  document.getElementById("adminDemo").scrollIntoView({behavior:"smooth"});
+  document.getElementById("adminDemo")?.scrollIntoView({behavior:"smooth"});
 }
 function deleteGallery(id){
   if(!confirm("Padam gambar ini?"))return;

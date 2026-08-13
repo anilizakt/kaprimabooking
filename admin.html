@@ -1,29 +1,23 @@
 <!doctype html>
 <html lang="ms">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KAPRIMA — Admin Demo</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAPRIMA Admin Demo</title>
 <link rel="stylesheet" href="style.css">
 <style>
-body{background:#f5f7f4}
-.admin-page-head{background:#0b3d2e;color:#fff;padding:28px 0;margin-bottom:24px}
-.admin-page-head .container{display:flex;justify-content:space-between;align-items:center;gap:20px}
-.admin-page-head a{color:#fff;text-decoration:none;border:1px solid #ffffff55;padding:9px 14px;border-radius:10px}
-.admin-demo{padding-top:10px}
+body{background:#f5f7f4}.admin-page-head{background:#0b3d2e;color:#fff;padding:28px 0;margin-bottom:24px}.admin-page-head .container{display:flex;justify-content:space-between;align-items:center;gap:20px}.admin-page-head a{color:#fff;text-decoration:none;border:1px solid #ffffff55;padding:9px 14px;border-radius:10px}.admin-wrap{padding-bottom:50px}.admin-card{background:#fff;border:1px solid #dfe7e1;border-radius:18px;padding:22px;margin-bottom:18px}.admin-tabs{display:flex;gap:8px;margin-bottom:18px}.admin-tab{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;background:#d6ad5c;color:#17372d}.admin-tab.active{background:#0b3d2e;color:#fff}.admin-pane{display:none}.admin-pane.active{display:block}.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.admin-form label{display:block;font-weight:600;margin-bottom:10px}.admin-form input,.admin-form textarea,.admin-form select{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:11px;border:1px solid #dfe6e1;border-radius:9px;background:#fff}.admin-form textarea{min-height:90px}.admin-form input[type=checkbox]{display:inline;width:auto}.admin-form button,.admin-item button{border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer}.save{background:#d6ad5c;color:#17372d}.cancel{background:#edf1ee}.admin-list{display:grid;gap:12px}.admin-item{background:#fff;border:1px solid #dfe7e1;border-radius:14px;padding:15px;display:flex;justify-content:space-between;gap:15px;align-items:center}.edit{background:#e8eee9}.delete{background:#f1c8c8}.admin-gallery-list{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.admin-gallery-item{background:#fff;border:1px solid #dfe7e1;border-radius:14px;overflow:hidden}.admin-gallery-item img{width:100%;height:160px;object-fit:cover}.admin-gallery-item .p{padding:11px}.note{font-size:13px;color:#66756d}.msg{padding:10px;border-radius:9px;background:#edf4ef;margin-bottom:15px}
+@media(max-width:800px){.admin-grid,.admin-gallery-list{grid-template-columns:1fr 1fr}}@media(max-width:520px){.admin-grid,.admin-gallery-list{grid-template-columns:1fr}.admin-item{display:block}.admin-item-actions{margin-top:10px}}
 </style>
 </head>
 <body>
-<header class="admin-page-head">
-  <div class="container">
-    <div><strong>KAPRIMA ADMIN</strong><div style="opacity:.75;font-size:13px">Demo pengurusan kandungan</div></div>
-    <a href="index.html">← Kembali ke Landing Page</a>
-  </div>
-</header>
-<main>
-
+<header class="admin-page-head"><div class="container"><div><strong>KAPRIMA ADMIN</strong><div style="opacity:.75;font-size:13px">Demo pengurusan kandungan</div></div><a href="index.html">← Kembali ke Landing Page</a></div></header>
+<main class="container admin-wrap">
+<div class="msg">⚠️ Ini ialah <strong>Demo GitHub</strong>. Data disimpan dalam browser ini sahaja. Untuk production nanti kita buat login admin + database sebenar.</div>
+<div class="admin-tabs"><button class="admin-tab active" data-tab="packagesAdmin">📦 Pakej</button><button class="admin-tab" data-tab="galleryAdmin">📷 Galeri</button><button class="admin-tab" data-tab="blockedAdmin">📅 Tarikh Tutup</button></div>
+<section id="packagesAdmin" class="admin-pane active"><div class="admin-card"><h2>Tambah / Edit Pakej</h2><form id="packageForm" class="admin-form"><input type="hidden" id="pkgId"><div class="admin-grid"><label>Nama pakej<input id="pkgName" required placeholder="Contoh: Pakej Lawatan + Susu"></label><label>Ringkasan<input id="pkgShort" placeholder="Penerangan ringkas"></label><label>Harga asas (RM)<input id="pkgPrice" type="number" min="0" step="0.01" value="600" required></label><label>Pax asas<input id="pkgBasePax" type="number" min="1" value="30" required></label><label>Tambahan / pax (RM)<input id="pkgExtra" type="number" min="0" step="0.01" value="20" required></label><label>Maksimum pax / sesi<input id="pkgMax" type="number" min="1" value="120" required></label></div><label>Penerangan<textarea id="pkgDesc"></textarea></label><label><input type="checkbox" id="pkgActive" checked> Paparkan di landing page</label><br><button class="save" type="submit">Simpan Pakej</button> <button class="cancel" type="button" id="pkgCancel">Batal</button></form></div><div id="packageAdminList" class="admin-list"></div></section>
+<section id="galleryAdmin" class="admin-pane"><div class="admin-card"><h2>Tambah / Edit Gambar Lawatan</h2><form id="galleryForm" class="admin-form"><input type="hidden" id="galId"><div class="admin-grid"><label>Tajuk gambar<input id="galTitle" required placeholder="Contoh: Lawatan SK ABC"></label><label>Caption<input id="galCaption" placeholder="Penerangan ringkas"></label></div><label>Upload gambar<input id="galFile" type="file" accept="image/*"></label><label>Atau URL gambar (demo)<input id="galUrl" placeholder="https://..."></label><label><input type="checkbox" id="galActive" checked> Paparkan di landing page</label><br><button class="save" type="submit">Simpan Gambar</button> <button class="cancel" type="button" id="galCancel">Batal</button></form><p class="note">Untuk demo GitHub, gambar disimpan dalam browser. Production nanti akan simpan ke server.</p></div><div id="galleryAdminList" class="admin-gallery-list"></div></section>
+<section id="blockedAdmin" class="admin-pane"><div class="admin-card"><h2>Block Tarikh Lawatan</h2><p>Jumaat sudah <strong>automatik tidak boleh ditempah</strong>. Di sini admin boleh block tarikh lain seperti cuti, penyelenggaraan atau tarikh khas.</p><form id="blockedDateForm" class="admin-form"><div class="admin-grid"><label>Tarikh<input id="blockedDate" type="date" required></label><label>Sebab<input id="blockedReason" placeholder="Contoh: Cuti / KAPRIMA ditutup"></label></div><button class="save" type="submit">Block Tarikh</button></form></div><div id="blockedDateList" class="admin-list"></div></section>
 </main>
 <footer><div class="container footer-inner"><p>© <span id="year"></span> KAPRIMA — Admin Demo</p></div></footer>
 <script src="demo.js"></script>
-</body>
-</html>
+</body></html>
