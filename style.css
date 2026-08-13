@@ -171,3 +171,7 @@ footer{background:#071a13;color:#fff;padding:30px 0}.footer-inner{display:flex;a
 .demo-note{font-size:12px;color:#66756d}
 @media(max-width:800px){.admin-grid,.admin-gallery-list{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.admin-grid,.admin-gallery-list{grid-template-columns:1fr}.admin-item{display:block}.admin-item-actions{margin-top:10px}}
+
+/* Blocked dates + package selector */
+#packageSelect{font-weight:600}
+.admin-item small{line-height:1.5}

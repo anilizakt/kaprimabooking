@@ -2,81 +2,85 @@
 const $ = (s) => document.querySelector(s);
 const money = n => "RM" + Number(n).toLocaleString("ms-MY", {maximumFractionDigits:0});
 
-$("#year").textContent = new Date().getFullYear();
+const yearEl=$("#year"); if(yearEl) yearEl.textContent = new Date().getFullYear();
 
 const pax = $("#pax"), date = $("#visitDate"), session = $("#session");
+const packageSelect = $("#packageSelect");
 const total = $("#totalDisplay"), deposit = $("#depositDisplay"), balance = $("#balanceDisplay");
 const msg = $("#formMessage"), availability = $("#availabilityBox");
 
 let demoBookings = JSON.parse(localStorage.getItem("kaprima_demo_bookings") || "[]");
+const blockedDatesKey = "kaprima_demo_blocked_dates";
+let blockedDates = JSON.parse(localStorage.getItem(blockedDatesKey) || "[]");
 
-function calc(p) {
-  return p >= 30 ? 600 + ((p - 30) * 20) : 0;
+function money(n){ return "RM" + Number(n||0).toLocaleString("ms-MY", {maximumFractionDigits:0}); }
+function activePackages(){ return cmsPackages.filter(x=>x.active); }
+function selectedPackage(){ return cmsPackages.find(x=>x.id===packageSelect?.value) || activePackages()[0] || null; }
+function calcForPackage(paxCount, pkg){
+  if(!pkg || paxCount < Number(pkg.basePax)) return 0;
+  return Number(pkg.price) + Math.max(0,paxCount-Number(pkg.basePax))*Number(pkg.extra);
 }
-function quote() {
-  const p = Number(pax.value || 0);
-  const t = calc(p);
-  const d = t * .3;
-  total.textContent = money(t);
-  deposit.textContent = money(d);
-  balance.textContent = money(t-d);
+function calc(p){ return calcForPackage(p, selectedPackage()) || 0; }
+function isFriday(dateString){ return new Date(dateString+"T00:00:00").getDay()===5; }
+function getBlockedDate(dateString){ return blockedDates.find(x=>x.date===dateString); }
+function dateClosedReason(dateString){
+  if(!dateString) return "";
+  if(isFriday(dateString)) return "Jumaat — KAPRIMA tidak menerima lawatan.";
+  const b=getBlockedDate(dateString); return b ? (b.reason || "Tarikh ini telah ditutup oleh admin KAPRIMA.") : "";
 }
-function reserved(d,s) {
-  return demoBookings
-    .filter(x => x.date === d && x.session === s)
-    .reduce((sum,x) => sum + Number(x.pax),0);
+function validateVisitDate(){
+  if(!date.value) return true;
+  const reason=dateClosedReason(date.value);
+  if(reason){ show("Tarikh ini tidak tersedia: "+reason,true); date.value=""; refreshAvailability(); return false; }
+  return true;
 }
-function refreshAvailability() {
-  if (!date.value || !session.value) {
-    if (availability) availability.textContent = "Pilih tarikh & sesi untuk simulasi kapasiti.";
-    return;
-  }
-  const used = reserved(date.value,session.value);
-  const left = Math.max(0,120-used);
-  if (availability) {
-    availability.textContent = `Demo: ${left} / 120 pax masih tersedia`;
-    availability.style.color = left < 30 ? "#9b2525" : "#236c50";
-  }
+function quote(){
+  const p=Number(pax.value||0), pkg=selectedPackage();
+  const t=calcForPackage(p,pkg), d=t*.3;
+  total.textContent=money(t); deposit.textContent=money(d); balance.textContent=money(t-d);
 }
-function show(text,error=false) {
-  msg.textContent=text;
-  msg.className="form-message show " + (error ? "error" : "success");
+function reserved(d,s){
+  return demoBookings.filter(x=>x.date===d && x.session===s).reduce((sum,x)=>sum+Number(x.pax),0);
+}
+function refreshAvailability(){
+  if(!date.value || !session.value){ if(availability) availability.textContent="Pilih tarikh & sesi untuk simulasi kapasiti."; return; }
+  const reason=dateClosedReason(date.value);
+  if(reason){ if(availability) availability.textContent="Tarikh tidak tersedia — "+reason; return; }
+  const used=reserved(date.value,session.value), left=Math.max(0,120-used);
+  if(availability){ availability.textContent=`Demo: ${left} / 120 pax masih tersedia`; availability.style.color=left<30?"#9b2525":"#236c50"; }
+}
+function show(text,error=false){ msg.textContent=text; msg.className="form-message show "+(error?"error":"success"); }
+function populatePackageSelect(){
+  if(!packageSelect) return;
+  const current=packageSelect.value;
+  packageSelect.innerHTML='<option value="">Pilih pakej</option>'+activePackages().map(x=>`<option value="${escapeAttr(x.id)}">${escapeHtml(x.name)} — ${money(x.price)} / ${x.basePax} pax</option>`).join("");
+  if(activePackages().some(x=>x.id===current)) packageSelect.value=current;
+  else if(activePackages()[0]) packageSelect.value=activePackages()[0].id;
+  quote();
 }
 
-pax.addEventListener("input",quote);
-date.addEventListener("change",refreshAvailability);
-session.addEventListener("change",refreshAvailability);
+if(date){ date.min=new Date().toISOString().split("T")[0]; date.addEventListener("change",()=>{ if(validateVisitDate()) refreshAvailability(); }); }
+if(pax) pax.addEventListener("input",quote);
+if(session) session.addEventListener("change",refreshAvailability);
+if(packageSelect) packageSelect.addEventListener("change",quote);
 quote();
 
 const menuBtn=$("#menuBtn"), nav=$("#navLinks");
 if(menuBtn) menuBtn.onclick=()=>nav.classList.toggle("open");
 document.querySelectorAll("#navLinks a").forEach(a=>a.onclick=()=>nav.classList.remove("open"));
 
-$("#bookingForm").addEventListener("submit", e => {
+const bookingForm=$("#bookingForm"); if(bookingForm) bookingForm.addEventListener("submit", e => {
   e.preventDefault();
-  const p=Number(pax.value||0);
-  if(p<30||p>120) return show("Demo: jumlah peserta mesti antara 30 hingga 120 pax.",true);
+  const p=Number(pax.value||0), pkg=selectedPackage();
+  if(!pkg) return show("Sila pilih pakej lawatan.",true);
+  if(p<Number(pkg.basePax)||p>Number(pkg.maxPax)) return show(`Jumlah peserta untuk pakej ini mesti antara ${pkg.basePax} hingga ${pkg.maxPax} pax.`,true);
   if(!date.value||!session.value) return show("Sila pilih tarikh dan sesi.",true);
-  const day=new Date(date.value+"T00:00:00").getDay();
-  if(day===5) return show("Lawatan KAPRIMA dibuka Sabtu hingga Khamis. Jumaat ditutup.",true);
-  const left=120-reserved(date.value,session.value);
-  if(p>left) return show(`Slot demo tidak mencukupi. Tinggal ${left} pax untuk sesi ini.`,true);
-
-  const t=calc(p);
-  const booking={
-    id:"DEMO-"+Date.now().toString().slice(-6),
-    name:$("#name").value,
-    phone:$("#phone").value,
-    email:$("#email").value,
-    group:$("#groupType").value,
-    date:date.value,
-    session:session.value,
-    pax:p,total:t,deposit:t*.3
-  };
-  demoBookings.push(booking);
-  localStorage.setItem("kaprima_demo_bookings",JSON.stringify(demoBookings));
-  show(`Demo booking berjaya! Booking ID: ${booking.id}. Deposit simulasi: ${money(booking.deposit)}. Tiada bayaran sebenar dibuat.`);
-  refreshAvailability();
+  const reason=dateClosedReason(date.value); if(reason) return show("Tarikh ini tidak tersedia: "+reason,true);
+  const left=120-reserved(date.value,session.value); if(p>left) return show(`Slot demo tidak mencukupi. Tinggal ${left} pax untuk sesi ini.`,true);
+  const t=calcForPackage(p,pkg);
+  const booking={id:"DEMO-"+Date.now().toString().slice(-6),name:$("#name").value,phone:$("#phone").value,email:$("#email").value,group:$("#groupType").value,packageId:pkg.id,packageName:pkg.name,date:date.value,session:session.value,pax:p,total:t,deposit:t*.3};
+  demoBookings.push(booking); localStorage.setItem("kaprima_demo_bookings",JSON.stringify(demoBookings));
+  show(`Demo booking berjaya! ${pkg.name} • Booking ID: ${booking.id}. Deposit simulasi: ${money(booking.deposit)}. Tiada bayaran sebenar dibuat.`); refreshAvailability();
 });
 
 const chatToggle=$("#chatToggle"), chatPanel=$("#chatPanel"), chatClose=$("#chatClose");
@@ -105,7 +109,7 @@ function answer(q){
   if(x.includes("sekolah")||x.includes("tadika")||x.includes("universiti")||x.includes("keluarga")) return "KAPRIMA sesuai untuk tadika, sekolah rendah, sekolah menengah, universiti, keluarga dan kumpulan. Antara pengalaman utama ialah melihat haiwan dengan lebih dekat dan melihat proses penghasilan susu UHT.";
   return "Boleh 😊 KAPRIMA boleh bantu tentang harga, jumlah pax, waktu lawatan, deposit atau booking. Cuba tanya contohnya: “Berapa harga untuk 50 pax?”";
 }
-chatForm.addEventListener("submit",e=>{
+if(chatForm) chatForm.addEventListener("submit",e=>{
   e.preventDefault(); const q=chatInput.value.trim(); if(!q)return;
   user(q); chatInput.value="";
   setTimeout(()=>bot(answer(q)),250);
@@ -132,6 +136,8 @@ function saveCms(){
   localStorage.setItem(demoGalleryKey,JSON.stringify(cmsGallery));
   renderCms();
   renderPublicCms();
+  populatePackageSelect();
+  renderBlockedDates();
 }
 function renderPublicCms(){
   const grid=document.getElementById("packagesGrid");
@@ -148,6 +154,7 @@ function renderPublicCms(){
 function renderCms(){
   const list=document.getElementById("packageAdminList");
   if(list) list.innerHTML=cmsPackages.map(x=>`<div class="admin-item"><div><strong>${escapeHtml(x.name)}</strong><br><small>${escapeHtml(x.short)} • RM${Number(x.price).toLocaleString("ms-MY")} / ${x.basePax} pax • ${x.active?"Aktif":"Disorok"}</small></div><div class="admin-item-actions"><button class="edit-btn" onclick="editPackage('${x.id}')">Edit</button><button class="delete-btn" onclick="deletePackage('${x.id}')">Padam</button></div></div>`).join("")||"<p>Belum ada pakej.</p>";
+  renderBlockedDates();
   const gl=document.getElementById("galleryAdminList");
   if(gl) gl.innerHTML=cmsGallery.map(x=>`<div class="admin-gallery-item"><img src="${escapeAttr(x.url)}" alt="${escapeAttr(x.title)}"><div class="p"><strong>${escapeHtml(x.title)}</strong><p>${escapeHtml(x.caption||"")}</p><small>${x.active?"Dipaparkan":"Disorok"}</small><br><br><button class="edit-btn" onclick="editGallery('${x.id}')">Edit</button><button class="delete-btn" onclick="deleteGallery('${x.id}')">Padam</button></div></div>`).join("")||"<p>Belum ada gambar.</p>";
 }
@@ -179,6 +186,19 @@ function deletePackage(id){
   if(!confirm("Padam pakej ini?"))return;
   cmsPackages=cmsPackages.filter(x=>x.id!==id);saveCms();
 }
+
+function renderBlockedDates(){
+  const list=document.getElementById("blockedDateList"); if(!list)return;
+  const rows=[...blockedDates].sort((a,b)=>a.date.localeCompare(b.date));
+  list.innerHTML=rows.map(x=>`<div class="admin-item"><div><strong>${escapeHtml(x.date)}</strong><br><small>${escapeHtml(x.reason||"Tarikh ditutup")}</small></div><div class="admin-item-actions"><button class="delete-btn" onclick="unblockDate('${escapeAttr(x.date)}')">Buka Semula</button></div></div>`).join("")||"<p>Belum ada tarikh tambahan yang diblock.</p>";
+}
+function unblockDate(d){ if(!confirm("Buka semula tarikh ini?"))return; blockedDates=blockedDates.filter(x=>x.date!==d); localStorage.setItem(blockedDatesKey,JSON.stringify(blockedDates)); renderBlockedDates(); }
+document.getElementById("blockedDateForm")?.addEventListener("submit",e=>{
+  e.preventDefault(); const d=document.getElementById("blockedDate").value, reason=document.getElementById("blockedReason").value.trim();
+  if(!d)return; if(isFriday(d)){alert("Jumaat memang sudah ditutup secara automatik. Tidak perlu block lagi.");return;}
+  const i=blockedDates.findIndex(x=>x.date===d); const item={date:d,reason:reason||"Tarikh ditutup oleh admin KAPRIMA"}; if(i>=0)blockedDates[i]=item; else blockedDates.push(item);
+  localStorage.setItem(blockedDatesKey,JSON.stringify(blockedDates)); document.getElementById("blockedDateForm").reset(); renderBlockedDates(); alert("Tarikh berjaya diblock.");
+});
 document.getElementById("packageForm")?.addEventListener("submit",e=>{
   e.preventDefault();
   const id=document.getElementById("pkgId").value||("p"+Date.now());
@@ -232,4 +252,4 @@ document.querySelectorAll(".admin-tab").forEach(btn=>btn.addEventListener("click
   document.querySelectorAll(".admin-pane").forEach(p=>p.classList.remove("active"));
   btn.classList.add("active"); document.getElementById(btn.dataset.tab).classList.add("active");
 }));
-renderCms();renderPublicCms();
+renderCms();renderPublicCms();populatePackageSelect();renderBlockedDates();

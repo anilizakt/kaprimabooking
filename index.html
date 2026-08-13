@@ -23,7 +23,7 @@
       <a href="#pakej">Pakej</a>
       <a href="#cara">Cara Booking</a>
       <a href="#faq">FAQ</a>
-    <a href="#adminDemo">Admin Demo</a></nav>
+    </nav>
     <a class="btn btn-small btn-gold" href="#booking">Tempah Lawatan</a>
     <button class="menu-btn" id="menuBtn" aria-label="Buka menu">☰</button>
   </div>
@@ -182,6 +182,12 @@
         <label>Email
           <input id="email" name="email" type="email" required maxlength="120" placeholder="nama@email.com">
         </label>
+        <label class="full">Pilih Pakej
+          <select id="packageSelect" name="package" required>
+            <option value="">Pilih pakej</option>
+          </select>
+          <small>Pakej dan harga diurus melalui Admin KAPRIMA.</small>
+        </label>
         <label>Jenis Kumpulan
           <select id="groupType" name="groupType" required>
             <option value="">Pilih</option>
@@ -284,59 +290,6 @@
   </section>
 </div>
 
-
-<!-- KAPRIMA DEMO CMS -->
-<section id="adminDemo" class="section admin-demo">
-  <div class="section-head">
-    <span class="eyebrow">DEMO ADMIN</span>
-    <h2>Urus Kandungan KAPRIMA</h2>
-    <p>Versi GitHub Demo sahaja. Data disimpan dalam browser ini menggunakan localStorage.</p>
-  </div>
-  <div class="admin-tabs">
-    <button type="button" class="admin-tab active" data-tab="packagesAdmin">Pakej</button>
-    <button type="button" class="admin-tab" data-tab="galleryAdmin">Galeri</button>
-  </div>
-
-  <div id="packagesAdmin" class="admin-pane active">
-    <div class="admin-card">
-      <h3>Tambah / Edit Pakej</h3>
-      <form id="packageForm" class="admin-form">
-        <input type="hidden" id="pkgId">
-        <div class="admin-grid">
-          <label>Nama pakej<input id="pkgName" required placeholder="Contoh: Pakej Lawatan + Susu"></label>
-          <label>Ringkasan<input id="pkgShort" placeholder="Penerangan ringkas"></label>
-          <label>Harga asas (RM)<input id="pkgPrice" type="number" min="0" step="0.01" required></label>
-          <label>Pax asas<input id="pkgBasePax" type="number" min="1" value="30" required></label>
-          <label>Tambahan / pax (RM)<input id="pkgExtra" type="number" min="0" step="0.01" value="20" required></label>
-          <label>Maksimum pax / sesi<input id="pkgMax" type="number" min="1" value="120" required></label>
-        </div>
-        <label>Penerangan<textarea id="pkgDesc" placeholder="Penerangan penuh pakej"></textarea></label>
-        <label><input type="checkbox" id="pkgActive" checked> Paparkan di landing page</label>
-        <div><button type="submit">Simpan Pakej</button> <button type="button" id="pkgCancel" class="secondary">Batal</button></div>
-      </form>
-    </div>
-    <div id="packageAdminList" class="admin-list"></div>
-  </div>
-
-  <div id="galleryAdmin" class="admin-pane">
-    <div class="admin-card">
-      <h3>Tambah / Edit Gambar Lawatan</h3>
-      <form id="galleryForm" class="admin-form">
-        <input type="hidden" id="galId">
-        <div class="admin-grid">
-          <label>Tajuk gambar<input id="galTitle" required placeholder="Contoh: Lawatan SK ABC"></label>
-          <label>Caption<input id="galCaption" placeholder="Penerangan ringkas"></label>
-        </div>
-        <label>Upload gambar<input id="galFile" type="file" accept="image/*"></label>
-        <label>Atau URL gambar (untuk demo)<input id="galUrl" placeholder="https://..."></label>
-        <label><input type="checkbox" id="galActive" checked> Paparkan di landing page</label>
-        <div><button type="submit">Simpan Gambar</button> <button type="button" id="galCancel" class="secondary">Batal</button></div>
-      </form>
-      <p class="demo-note">Tip: Untuk GitHub Demo, gambar yang dipilih disimpan dalam browser. Versi production akan menyimpan gambar di server.</p>
-    </div>
-    <div id="galleryAdminList" class="admin-gallery-list"></div>
-  </div>
-</section>
 
 </main>
 
