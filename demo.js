@@ -110,3 +110,126 @@ chatForm.addEventListener("submit",e=>{
   user(q); chatInput.value="";
   setTimeout(()=>bot(answer(q)),250);
 });
+
+// DEMO CMS simulation: package/gallery data are stored in localStorage.
+// The real production admin uses MySQL and admin/packages.php + admin/gallery.php.
+
+
+/* =========================
+   KAPRIMA GITHUB DEMO CMS
+   ========================= */
+const defaultPackages = [
+  {id:"p1",name:"Pakej Lawatan",short:"Lawatan KAPRIMA untuk kumpulan",price:600,basePax:30,extra:20,maxPax:120,desc:"Pakej lawatan asas KAPRIMA.",active:true},
+  {id:"p2",name:"Pakej Lawatan + Susu",short:"Lawatan bersama pilihan produk susu",price:600,basePax:30,extra:20,maxPax:120,desc:"Harga contoh demo sahaja. Admin boleh ubah apabila harga sebenar ditetapkan.",active:true}
+];
+const demoPackagesKey="kaprima_demo_packages";
+const demoGalleryKey="kaprima_demo_gallery";
+let cmsPackages=JSON.parse(localStorage.getItem(demoPackagesKey)||"null")||defaultPackages;
+let cmsGallery=JSON.parse(localStorage.getItem(demoGalleryKey)||"[]");
+
+function saveCms(){
+  localStorage.setItem(demoPackagesKey,JSON.stringify(cmsPackages));
+  localStorage.setItem(demoGalleryKey,JSON.stringify(cmsGallery));
+  renderCms();
+  renderPublicCms();
+}
+function renderPublicCms(){
+  const grid=document.getElementById("packagesGrid");
+  if(grid){
+    const active=cmsPackages.filter(x=>x.active);
+    grid.innerHTML=active.map(x=>`<article class="package-card"><h3>${escapeHtml(x.name)}</h3><p>${escapeHtml(x.short)}</p><div class="package-price">RM${Number(x.price).toLocaleString("ms-MY")} / ${x.basePax} pax</div><p>${escapeHtml(x.desc)}</p><small>Tambahan: RM${Number(x.extra).toLocaleString("ms-MY")} / pax • Maksimum ${x.maxPax} pax/sesi</small></article>`).join("") || "<p>Tiada pakej dipaparkan.</p>";
+  }
+  const gg=document.getElementById("galleryGrid");
+  if(gg){
+    const active=cmsGallery.filter(x=>x.active);
+    gg.innerHTML=active.map(x=>`<article class="gallery-card"><img loading="lazy" src="${escapeAttr(x.url)}" alt="${escapeAttr(x.title)}"><div class="caption"><strong>${escapeHtml(x.title)}</strong><p>${escapeHtml(x.caption||"")}</p></div></article>`).join("") || "<p>Galeri akan dikemaskini oleh admin KAPRIMA.</p>";
+  }
+}
+function renderCms(){
+  const list=document.getElementById("packageAdminList");
+  if(list) list.innerHTML=cmsPackages.map(x=>`<div class="admin-item"><div><strong>${escapeHtml(x.name)}</strong><br><small>${escapeHtml(x.short)} • RM${Number(x.price).toLocaleString("ms-MY")} / ${x.basePax} pax • ${x.active?"Aktif":"Disorok"}</small></div><div class="admin-item-actions"><button class="edit-btn" onclick="editPackage('${x.id}')">Edit</button><button class="delete-btn" onclick="deletePackage('${x.id}')">Padam</button></div></div>`).join("")||"<p>Belum ada pakej.</p>";
+  const gl=document.getElementById("galleryAdminList");
+  if(gl) gl.innerHTML=cmsGallery.map(x=>`<div class="admin-gallery-item"><img src="${escapeAttr(x.url)}" alt="${escapeAttr(x.title)}"><div class="p"><strong>${escapeHtml(x.title)}</strong><p>${escapeHtml(x.caption||"")}</p><small>${x.active?"Dipaparkan":"Disorok"}</small><br><br><button class="edit-btn" onclick="editGallery('${x.id}')">Edit</button><button class="delete-btn" onclick="deleteGallery('${x.id}')">Padam</button></div></div>`).join("")||"<p>Belum ada gambar.</p>";
+}
+function resetPackageForm(){
+  document.getElementById("pkgId").value="";
+  document.getElementById("pkgName").value="";
+  document.getElementById("pkgShort").value="";
+  document.getElementById("pkgPrice").value="600";
+  document.getElementById("pkgBasePax").value="30";
+  document.getElementById("pkgExtra").value="20";
+  document.getElementById("pkgMax").value="120";
+  document.getElementById("pkgDesc").value="";
+  document.getElementById("pkgActive").checked=true;
+}
+function editPackage(id){
+  const x=cmsPackages.find(a=>a.id===id); if(!x)return;
+  document.getElementById("pkgId").value=x.id;
+  document.getElementById("pkgName").value=x.name;
+  document.getElementById("pkgShort").value=x.short;
+  document.getElementById("pkgPrice").value=x.price;
+  document.getElementById("pkgBasePax").value=x.basePax;
+  document.getElementById("pkgExtra").value=x.extra;
+  document.getElementById("pkgMax").value=x.maxPax;
+  document.getElementById("pkgDesc").value=x.desc||"";
+  document.getElementById("pkgActive").checked=!!x.active;
+  document.getElementById("adminDemo").scrollIntoView({behavior:"smooth"});
+}
+function deletePackage(id){
+  if(!confirm("Padam pakej ini?"))return;
+  cmsPackages=cmsPackages.filter(x=>x.id!==id);saveCms();
+}
+document.getElementById("packageForm")?.addEventListener("submit",e=>{
+  e.preventDefault();
+  const id=document.getElementById("pkgId").value||("p"+Date.now());
+  const item={id,name:document.getElementById("pkgName").value.trim(),short:document.getElementById("pkgShort").value.trim(),price:Number(document.getElementById("pkgPrice").value),basePax:Number(document.getElementById("pkgBasePax").value),extra:Number(document.getElementById("pkgExtra").value),maxPax:Number(document.getElementById("pkgMax").value),desc:document.getElementById("pkgDesc").value.trim(),active:document.getElementById("pkgActive").checked};
+  const i=cmsPackages.findIndex(x=>x.id===id);
+  if(i>=0)cmsPackages[i]=item; else cmsPackages.push(item);
+  saveCms();resetPackageForm();alert("Pakej disimpan dalam DEMO.");
+});
+document.getElementById("pkgCancel")?.addEventListener("click",resetPackageForm);
+
+function resetGalleryForm(){
+  document.getElementById("galId").value="";
+  document.getElementById("galTitle").value="";
+  document.getElementById("galCaption").value="";
+  document.getElementById("galFile").value="";
+  document.getElementById("galUrl").value="";
+  document.getElementById("galActive").checked=true;
+}
+function editGallery(id){
+  const x=cmsGallery.find(a=>a.id===id);if(!x)return;
+  document.getElementById("galId").value=x.id;
+  document.getElementById("galTitle").value=x.title;
+  document.getElementById("galCaption").value=x.caption||"";
+  document.getElementById("galUrl").value=x.url||"";
+  document.getElementById("galActive").checked=!!x.active;
+  document.getElementById("adminDemo").scrollIntoView({behavior:"smooth"});
+}
+function deleteGallery(id){
+  if(!confirm("Padam gambar ini?"))return;
+  cmsGallery=cmsGallery.filter(x=>x.id!==id);saveCms();
+}
+document.getElementById("galleryForm")?.addEventListener("submit",e=>{
+  e.preventDefault();
+  const file=document.getElementById("galFile").files[0];
+  const id=document.getElementById("galId").value||("g"+Date.now());
+  const old=cmsGallery.find(x=>x.id===id);
+  const finish=(url)=>{
+    const item={id,title:document.getElementById("galTitle").value.trim(),caption:document.getElementById("galCaption").value.trim(),url:url||(old?.url||""),active:document.getElementById("galActive").checked};
+    if(!item.url){alert("Sila pilih gambar atau masukkan URL gambar.");return;}
+    const i=cmsGallery.findIndex(x=>x.id===id); if(i>=0)cmsGallery[i]=item; else cmsGallery.push(item);
+    saveCms();resetGalleryForm();alert("Gambar disimpan dalam DEMO.");
+  };
+  if(file){
+    const reader=new FileReader(); reader.onload=()=>finish(reader.result); reader.readAsDataURL(file);
+  }else finish(document.getElementById("galUrl").value.trim());
+});
+document.getElementById("galCancel")?.addEventListener("click",resetGalleryForm);
+
+document.querySelectorAll(".admin-tab").forEach(btn=>btn.addEventListener("click",()=>{
+  document.querySelectorAll(".admin-tab").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".admin-pane").forEach(p=>p.classList.remove("active"));
+  btn.classList.add("active"); document.getElementById(btn.dataset.tab).classList.add("active");
+}));
+renderCms();renderPublicCms();

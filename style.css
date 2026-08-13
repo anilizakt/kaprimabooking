@@ -145,3 +145,29 @@ footer{background:#071a13;color:#fff;padding:30px 0}.footer-inner{display:flex;a
 .chat-form{display:flex;gap:7px;padding:10px;border-top:1px solid var(--line)}
 .chat-form input{margin:0;min-width:0}.chat-form button{border:0;border-radius:10px;background:var(--gold);padding:0 13px;font-weight:800;cursor:pointer}
 @media(max-width:500px){.chat-panel{width:calc(100vw - 30px);right:-8px}.chatbot{right:15px;bottom:15px}}
+
+/* GitHub CMS Demo */
+.admin-demo{background:#f7f9f6}
+.admin-tabs{display:flex;gap:8px;margin-bottom:18px}
+.admin-tab,.admin-form button,.secondary{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;background:#d6ad5c;color:#17372d}
+.admin-tab.active{background:#17372d;color:#fff}
+.admin-pane{display:none}.admin-pane.active{display:block}
+.admin-card{background:#fff;padding:22px;border-radius:18px;border:1px solid var(--line);margin-bottom:18px}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.admin-form label{display:block;font-weight:600;margin-bottom:10px}
+.admin-form input,.admin-form textarea{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:11px;border:1px solid #dfe6e1;border-radius:9px;background:#fff}
+.admin-form textarea{min-height:90px}
+.admin-form input[type="checkbox"]{display:inline;width:auto;margin-right:6px}
+.admin-form .secondary{background:#edf1ee}
+.admin-list{display:grid;gap:12px}
+.admin-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;display:flex;justify-content:space-between;gap:15px;align-items:center}
+.admin-item-actions{white-space:nowrap}
+.admin-item-actions button{border:0;border-radius:8px;padding:8px 11px;cursor:pointer;font-weight:700;margin-left:5px}
+.edit-btn{background:#e8eee9}.delete-btn{background:#f1c8c8}
+.admin-gallery-list{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.admin-gallery-item{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.admin-gallery-item img{width:100%;height:160px;object-fit:cover}
+.admin-gallery-item .p{padding:11px}
+.demo-note{font-size:12px;color:#66756d}
+@media(max-width:800px){.admin-grid,.admin-gallery-list{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.admin-grid,.admin-gallery-list{grid-template-columns:1fr}.admin-item{display:block}.admin-item-actions{margin-top:10px}}
